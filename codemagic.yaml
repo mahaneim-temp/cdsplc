@@ -1,0 +1,25 @@
+workflows:
+  android-workflow:
+    name: Android Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      vars:
+        PACKAGE_NAME: "com.cds.incinerator"
+    scripts:
+      - name: Setup Gradle
+        script: |
+          cd android
+          gradle wrapper --gradle-version 8.5
+          chmod +x gradlew
+      - name: Build APK
+        script: |
+          cd android
+          ./gradlew assembleDebug
+      - name: Prepare APK
+        script: |
+          mkdir -p build/outputs/apk
+          find android/app/build/outputs/apk -name "*.apk" -exec cp {} build/outputs/apk/cdsplc.apk \;
+          ls -la build/outputs/apk/
+    artifacts:
+      - build/outputs/apk/*.apk
