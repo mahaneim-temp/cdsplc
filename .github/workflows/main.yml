@@ -38,14 +38,23 @@ jobs:
       
     - name: Build APK
       working-directory: android
-      run: ./gradlew assembleDebug --no-daemon --stacktrace
+      run: ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build.log
+      
+    - name: Show build errors
+      if: failure()
+      working-directory: android
+      run: |
+        echo "=== Build failed, showing errors ==="
+        tail -100 build.log || true
       
     - name: Rename APK
+      if: success()
       run: |
         cd android/app/build/outputs/apk/debug
         mv app-debug.apk cdsplc.apk
         
     - name: Upload APK artifact
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: cdsplc-apk
