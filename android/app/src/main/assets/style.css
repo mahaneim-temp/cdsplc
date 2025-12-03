@@ -24,13 +24,13 @@ body {
   color: #e8f0ff;
 }
 
-/* 모바일 가로 모드 스타일 - 모바일 기기에서만 적용 */
+/* 모바일 가로 모드 스타일 - 정확한 스케일링으로 레이아웃 보호 */
 @media screen and (max-width: 1024px) {
   html, body {
     width: 100vw !important;
     height: 100vh !important;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-x: auto;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     position: fixed;
     top: 0;
@@ -49,7 +49,7 @@ body {
     align-items: center;
     justify-content: center;
     display: flex;
-    overflow: hidden;
+    overflow: auto;
     position: fixed;
     top: 0;
     left: 0;
@@ -58,30 +58,59 @@ body {
   }
   
   .dashboard {
+    /* 원본 크기 유지 - 절대값 사용 */
     width: 1440px !important;
     height: 810px !important;
     padding: 16px !important;
     gap: 14px !important;
     overflow: visible !important;
     flex-shrink: 0 !important;
-    /* 비율 유지하면서 스케일링 - 너비와 높이 중 작은 값을 사용하여 전체가 보이도록 */
+    display: flex !important;
+    flex-direction: column !important;
+    background: linear-gradient(145deg,#020b19,#071729,#04111f) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 18px 40px rgba(0,0,0,.8) !important;
+    /* 정확한 스케일 계산 - 너비와 높이 중 작은 값 사용 */
     transform-origin: center center !important;
-    /* 스케일 계산: 가로 모드에서 화면에 맞춰 조정 */
-    /* 대시보드 비율: 1440/810 = 1.777... (16:9) */
-    /* 화면 너비 기준 스케일과 높이 기준 스케일 중 작은 값 사용 */
+    /* 스케일: min(화면너비/대시보드너비, 화면높이/대시보드높이) */
     transform: scale(min(calc(100vw / 1440), calc(100vh / 810))) !important;
-    /* 스케일링 후에도 전체가 보이도록 보장 */
-    max-width: 100vw !important;
-    max-height: 100vh !important;
     position: relative !important;
   }
   
-  /* 모든 내부 요소가 transform의 영향을 받도록 */
-  .dashboard * {
-    transform-origin: inherit;
+  /* 내부 레이아웃 요소들 정상 작동 보장 */
+  .main-row {
+    flex: 1 !important;
+    display: grid !important;
+    grid-template-columns: 400px 416px 1fr !important;
+    gap: 12px !important;
+    overflow: visible !important;
+    min-height: 0 !important;
   }
   
-  /* 설정 모달만 별도 조정 (transform의 영향을 받지 않도록) */
+  .column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+  
+  .column-right {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .right-bottom-row {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10px !important;
+    flex: 0.85 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  
+  /* 설정 모달 */
   .modal-container {
     width: 90vw !important;
     max-width: 90vw !important;
@@ -120,6 +149,9 @@ body {
   gap:14px;
   overflow: visible;
   flex-shrink: 0;
+  /* 기본 transform 없음 - 미디어 쿼리에서만 적용 */
+  transform: none;
+  transform-origin: center center;
 }
 
 /* ---- Card ---- */
