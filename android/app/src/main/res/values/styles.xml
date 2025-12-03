@@ -4,6 +4,11 @@
         <item name="colorPrimary">#16385f</item>
         <item name="colorPrimaryDark">#041320</item>
         <item name="colorAccent">#2a7bff</item>
+        <!-- 전체 화면 모드 -->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 </resources>
 
