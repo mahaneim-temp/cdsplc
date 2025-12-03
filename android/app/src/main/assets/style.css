@@ -50,9 +50,9 @@ body {
   }
   
   .dashboard {
-    /* 실제 크기를 화면에 맞게 조정 - transform scale 제거 */
-    width: min(1440px, 100vw) !important;
-    height: min(810px, 100vh) !important;
+    /* 원본 크기 유지 */
+    width: 1440px !important;
+    height: 810px !important;
     padding: 16px !important;
     gap: 14px !important;
     overflow: visible !important;
@@ -62,9 +62,11 @@ body {
     background: linear-gradient(145deg,#020b19,#071729,#04111f) !important;
     border-radius: 14px !important;
     box-shadow: 0 18px 40px rgba(0,0,0,.8) !important;
-    /* transform scale 완전 제거 - 레이아웃 무너짐 방지 */
-    transform: none !important;
-    transform-origin: unset !important;
+    /* 정확한 스케일 계산 - 화면이 작을 때만 축소, 클 때는 원본 크기 유지 */
+    transform-origin: center center !important;
+    /* 스케일: 화면이 대시보드보다 작을 때만 축소, 클 때는 1 (원본 크기) */
+    /* clamp(최소값, 계산값, 최대값) 사용하여 0.5 ~ 1 사이로 제한 */
+    transform: scale(clamp(0.5, min(calc(100vw / 1440), calc(100vh / 810)), 1)) !important;
     position: relative !important;
   }
   
