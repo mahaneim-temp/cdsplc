@@ -5,14 +5,11 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,10 +23,10 @@ public class MainActivity extends AppCompatActivity {
         // 화면 방향을 가로 모드로 강제 설정 (가장 먼저 실행)
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         
-        // 전체 화면 모드 설정 - 상단바 숨기기
-        hideSystemUI();
-        
         setContentView(R.layout.activity_main);
+        
+        // 전체 화면 모드 설정 - 상단바 숨기기 (setContentView 이후)
+        hideSystemUI();
 
         webView = findViewById(R.id.webview);
         
@@ -93,30 +90,59 @@ public class MainActivity extends AppCompatActivity {
     
     /**
      * 시스템 UI(상단바, 하단 네비게이션 바)를 숨기는 메서드
+     * 모든 Android 버전에서 안전하게 작동하도록 수정
      */
     private void hideSystemUI() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Android 11 (API 30) 이상
-            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-            WindowInsetsController controller = getWindow().getInsetsController();
-            if (controller != null) {
-                controller.hide(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
-                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
-        } else {
-            // Android 10 이하
+        try {
             View decorView = getWindow().getDecorView();
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Android 11 (API 30) 이상
+                getWindow().setDecorFitsSystemWindows(false);
+                try {
+                    android.view.WindowInsetsController controller = getWindow().getInsetsController();
+                    if (controller != null) {
+                        controller.hide(
+                            android.view.WindowInsets.Type.statusBars() | 
+                            android.view.WindowInsets.Type.navigationBars()
+                        );
+                        controller.setSystemBarsBehavior(
+                            android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                        );
+                    }
+                } catch (Exception e) {
+                    // API 30+ 메서드 실패 시 하위 버전 방법 사용
+                    int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+                    decorView.setSystemUiVisibility(uiOptions);
+                }
+            } else {
+                // Android 10 이하 - 안전한 방법 사용
+                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+                decorView.setSystemUiVisibility(uiOptions);
+            }
+            
+            // 화면이 꺼지지 않도록 설정
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } catch (Exception e) {
+            // 오류 발생 시 기본 설정만 적용
+            try {
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } catch (Exception ex) {
+                // 최소한 화면이 꺼지지 않도록
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
         }
-        
-        // 화면이 꺼지지 않도록 설정
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -127,4 +153,3 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 }
-
