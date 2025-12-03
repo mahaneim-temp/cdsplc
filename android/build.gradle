@@ -1,0 +1,18 @@
+// Top-level build file
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.4'
+    }
+}
+
+// allprojects 블록은 제거 (Gradle 8.5+에서는 settings.gradle에서 관리)
+// repositories는 settings.gradle에서 설정됨
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+

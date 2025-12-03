@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>CDS Incinerator Controller</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="dashboard">
+
+    <!-- 상단 -->
+    <div class="top-row">
+      <div class="card top-card">
+        <div class="top-card-label">MODE</div>
+        <div class="top-card-value" id="mode-text">MODE1</div>
+      </div>
+      <div class="card top-card preset-card">
+        <div class="top-card-label" data-i18n="preset-label">프리셋</div>
+        <div class="preset-select-wrapper">
+          <button class="preset-select-btn" id="btn-preset-select">
+            <span class="preset-select-value" id="preset-select-value">프리셋 1</span>
+            <span class="preset-select-arrow">▼</span>
+          </button>
+          <div class="preset-dropdown" id="preset-dropdown">
+            <div class="preset-option" data-preset="1" data-i18n="preset1">프리셋 1</div>
+            <div class="preset-option" data-preset="2" data-i18n="preset2">프리셋 2</div>
+            <div class="preset-option" data-preset="3" data-i18n="preset3">프리셋 3</div>
+          </div>
+        </div>
+      </div>
+      <div class="card top-card">
+        <div class="top-card-label">STEP</div>
+        <div class="top-card-value" id="step-text">IDLE</div>
+      </div>
+      <div class="card top-card">
+        <div class="top-card-label" data-i18n="elapsed-time-label">경과시간</div>
+        <div class="top-card-value" id="elapsed-time">00:00:00</div>
+      </div>
+      <div class="card top-card">
+        <div class="top-card-label">ESG</div>
+        <div class="top-card-value" data-i18n="esg-value">연료/배출 추정</div>
+      </div>
+      <button class="settings-btn" id="btn-settings" data-i18n="settings-btn">설정</button>
+      <button class="emg-btn" id="btn-emg">EMG</button>
+    </div>
+
+    <!-- 메인 -->
+    <div class="main-row">
+
+      <!-- 좌측 -->
+      <div class="column column-left">
+
+        <div class="card control-card">
+          <div class="card-title" data-i18n="operation-control">운전 제어</div>
+          
+          <div class="control-main-btns">
+            <button class="primary-btn btn-auto" id="btn-start" data-i18n="auto-start">AUTO START</button>
+            <button class="primary-btn btn-stop" id="btn-stop" data-i18n="stop">STOP</button>
+          </div>
+
+          <div class="device-group ign-group">
+            <div class="device-row">
+              <button class="device-btn off" data-device="IGN">
+                <span class="device-label">IGN</span>
+                <span class="device-state">OFF</span>
+              </button>
+              <button class="device-btn off" data-device="P1">
+                <span class="device-label">P1</span>
+                <span class="device-state">OFF</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="device-group p-group">
+            <div class="device-row">
+              <button class="device-btn off" data-device="P2">
+                <span class="device-label">P2</span>
+                <span class="device-state">OFF</span>
+              </button>
+              <button class="device-btn off" data-device="P3">
+                <span class="device-label">P3</span>
+                <span class="device-state">OFF</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="device-pump">
+            <button class="device-btn off" data-device="PUMP">
+              <span class="device-label">PUMP</span>
+              <span class="device-state">OFF</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" data-i18n="fan-speed">FAN 속도</div>
+          <div class="fan-row">
+            <div class="fan-block">
+              <div class="fan-slider" id="fan1-slider">
+                <div class="fan-fill" id="fan1-fill"></div>
+                <div class="fan-knob" id="fan1-knob"></div>
+              </div>
+              <div class="fan-name">FAN1</div>
+              <div class="fan-percent" id="fan1-percent">0%</div>
+            </div>
+            <div class="fan-block">
+              <div class="fan-slider" id="fan2-slider">
+                <div class="fan-fill" id="fan2-fill"></div>
+                <div class="fan-knob" id="fan2-knob"></div>
+              </div>
+              <div class="fan-name">FAN2</div>
+              <div class="fan-percent" id="fan2-percent">0%</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 중앙 -->
+      <div class="column column-center">
+
+        <div class="card temp-display-card">
+          <div class="temp-inner">
+            <div class="temp-row">
+              <div class="temp-label" data-i18n="combustion-chamber">연소실</div>
+              <div class="temp-value" id="temp-main">1,100℃</div>
+            </div>
+            <div class="temp-row">
+              <div class="temp-label">STACK</div>
+              <div class="temp-value" id="temp-stack">550℃</div>
+            </div>
+          </div>
+        </div>
+
+  <div class="card temp-graph-card">
+    <div class="card-title" data-i18n="temp-graph">온도 그래프</div>
+    <div class="temp-graph-container">
+  <canvas id="tempChart"></canvas>
+    </div>
+  </div>
+
+
+      </div>
+
+      <!-- 우측: 카메라 (상단) + 폐기물통/로그 (하단 좌우 배치) -->
+      <div class="column column-right">
+        <div class="card camera-card">
+          <div class="card-title" data-i18n="camera">카메라</div>
+          <div class="camera-view" id="camera-view">
+            <div class="camera-flame-container">
+              <div class="flame flame-1"></div>
+              <div class="flame flame-2"></div>
+              <div class="flame flame-3"></div>
+              <div class="flame flame-4"></div>
+            </div>
+            <div class="camera-label">CAMERA 1</div>
+          </div>
+          <div class="camera-tabs">
+            <button class="camera-tab active" data-cam="1">1</button>
+            <button class="camera-tab" data-cam="2">2</button>
+            <button class="camera-tab" data-cam="3">3</button>
+          </div>
+        </div>
+
+        <div class="right-bottom-row">
+          <div class="card waste-card">
+            <div class="card-title" data-i18n="waste-movement">폐기물통 이동</div>
+            
+            <div class="waste-section">
+              <div class="waste-section-title" data-i18n="horizontal">수평</div>
+              <div class="waste-buttons">
+                <button class="primary-btn btn-waste active" data-move="OUT" id="btn-waste-out">OUT</button>
+                <button class="primary-btn btn-waste" data-move="IN" id="btn-waste-in">IN</button>
+              </div>
+            </div>
+
+            <div class="waste-divider"></div>
+
+            <div class="waste-section">
+              <div class="waste-section-title" data-i18n="vertical">수직</div>
+              <div class="waste-buttons">
+                <button class="primary-btn btn-waste active" data-move="DOWN" id="btn-waste-down">DOWN</button>
+                <button class="primary-btn btn-waste" data-move="UP" id="btn-waste-up">UP</button>
+              </div>
+          </div>
+        </div>
+
+        <div class="card log-card">
+          <div class="card-title" data-i18n="log-alarm">로그 / 알람</div>
+          <div id="log-body" class="log-body"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- 설정 Modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2 class="modal-title" data-i18n="settings-title">설정</h2>
+      <button class="modal-close" id="btn-close-settings">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- 언어 설정 -->
+      <div class="settings-section">
+        <h3 class="settings-section-title" data-i18n="language-settings">언어 설정</h3>
+        <div class="settings-item">
+          <label class="settings-label" data-i18n="language-label">언어</label>
+          <select class="settings-select" id="language-select">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+            <option value="ja">日本語</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 프리셋 설정 탭 -->
+      <div class="settings-section">
+        <h3 class="settings-section-title" data-i18n="preset-settings">프리셋 설정</h3>
+        <div class="preset-tabs">
+          <button class="preset-tab active" data-preset-tab="1" data-i18n="preset1">프리셋 1</button>
+          <button class="preset-tab" data-preset-tab="2" data-i18n="preset2">프리셋 2</button>
+          <button class="preset-tab" data-preset-tab="3" data-i18n="preset3">프리셋 3</button>
+        </div>
+
+        <!-- 프리셋 1 -->
+        <div class="preset-content active" data-preset-content="1">
+          <!-- S1 PURGE 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S1 PURGE 단계 (퍼지)</h4>
+            <div class="settings-item">
+              <label class="settings-label">단계 시간</label>
+              <input type="number" class="settings-input" id="preset1-s1-time" value="60" min="10" max="300">
+              <span class="settings-unit">초</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset1-s1-fan1" value="30" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset1-s1-fan2" value="30" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+          </div>
+
+          <!-- S2 IGN 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S2 IGN 단계 (점화)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset1-s2-temp-main" value="600" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">초기 팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset1-s2-fan1-init" value="30" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">초기 팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset1-s2-fan2-init" value="30" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">100도마다 팬 속도 증가 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset1-s2-fan1-increment" value="5" min="0" max="20">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">100도마다 팬 속도 증가 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset1-s2-fan2-increment" value="5" min="0" max="20">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">IGN 화염 감지 후 대기 시간</label>
+              <input type="number" class="settings-input" id="preset1-s2-ign-off-delay" value="10" min="5" max="30">
+              <span class="settings-unit">초</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">자동 재점화 최대 시도 횟수</label>
+              <input type="number" class="settings-input" id="preset1-s2-retry-count" value="3" min="1" max="5">
+              <span class="settings-unit">회</span>
+            </div>
+          </div>
+
+          <!-- S3 MAIN 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S3 MAIN 단계 (소각)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset1-s3-temp-main" value="1100" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">P2/P3 작동 임계 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset1-s3-p2p3-temp" value="950" min="0" max="2000">
+              <span class="settings-unit">℃ (목표 온도보다 낮을 때 작동)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset1-s3-fan1" value="80" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset1-s3-fan2" value="80" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">퀀처 펌프 작동 온도 (STACK)</label>
+              <input type="number" class="settings-input" id="preset1-s3-quench-temp" value="850" min="0" max="1000">
+              <span class="settings-unit">℃</span>
+            </div>
+          </div>
+
+          <!-- S4 COOL 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S4 COOL 단계 (냉각)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset1-s4-temp-main" value="400" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">소화 판단 시간</label>
+              <input type="number" class="settings-input" id="preset1-s4-extinguish-time" value="300" min="60" max="1800">
+              <span class="settings-unit">초 (목표 온도 이하 유지 시간)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬2 속도 증가량</label>
+              <input type="number" class="settings-input" id="preset1-s4-fan2-increase" value="20" min="0" max="50">
+              <span class="settings-unit">% (소화 판단 후 증가)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬2 작동 시간</label>
+              <input type="number" class="settings-input" id="preset1-s4-fan2-duration" value="300" min="60" max="600">
+              <span class="settings-unit">초 (5분 = 300초)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 프리셋 2 -->
+        <div class="preset-content" data-preset-content="2">
+          <!-- S1 PURGE 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S1 PURGE 단계 (퍼지)</h4>
+            <div class="settings-item">
+              <label class="settings-label">단계 시간</label>
+              <input type="number" class="settings-input" id="preset2-s1-time" value="60" min="10" max="300">
+              <span class="settings-unit">초</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset2-s1-fan1" value="35" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset2-s1-fan2" value="35" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+          </div>
+
+          <!-- S2 IGN 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S2 IGN 단계 (점화)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset2-s2-temp-main" value="700" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">초기 팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset2-s2-fan1-init" value="35" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">초기 팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset2-s2-fan2-init" value="35" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">100도마다 팬 속도 증가 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset2-s2-fan1-increment" value="6" min="0" max="20">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">100도마다 팬 속도 증가 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset2-s2-fan2-increment" value="6" min="0" max="20">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">IGN 화염 감지 후 대기 시간</label>
+              <input type="number" class="settings-input" id="preset2-s2-ign-off-delay" value="10" min="5" max="30">
+              <span class="settings-unit">초</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">자동 재점화 최대 시도 횟수</label>
+              <input type="number" class="settings-input" id="preset2-s2-retry-count" value="3" min="1" max="5">
+              <span class="settings-unit">회</span>
+            </div>
+          </div>
+
+          <!-- S3 MAIN 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S3 MAIN 단계 (소각)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset2-s3-temp-main" value="1200" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">P2/P3 작동 임계 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset2-s3-p2p3-temp" value="1050" min="0" max="2000">
+              <span class="settings-unit">℃ (목표 온도보다 낮을 때 작동)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset2-s3-fan1" value="80" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset2-s3-fan2" value="80" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">퀀처 펌프 작동 온도 (STACK)</label>
+              <input type="number" class="settings-input" id="preset2-s3-quench-temp" value="850" min="0" max="1000">
+              <span class="settings-unit">℃</span>
+            </div>
+          </div>
+
+          <!-- S4 COOL 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S4 COOL 단계 (냉각)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset2-s4-temp-main" value="400" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">소화 판단 시간</label>
+              <input type="number" class="settings-input" id="preset2-s4-extinguish-time" value="300" min="60" max="1800">
+              <span class="settings-unit">초 (목표 온도 이하 유지 시간)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬2 속도 증가량</label>
+              <input type="number" class="settings-input" id="preset2-s4-fan2-increase" value="20" min="0" max="50">
+              <span class="settings-unit">% (소화 판단 후 증가)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬2 작동 시간</label>
+              <input type="number" class="settings-input" id="preset2-s4-fan2-duration" value="300" min="60" max="600">
+              <span class="settings-unit">초 (5분 = 300초)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 프리셋 3 -->
+        <div class="preset-content" data-preset-content="3">
+          <!-- S1 PURGE 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S1 PURGE 단계 (퍼지)</h4>
+            <div class="settings-item">
+              <label class="settings-label">단계 시간</label>
+              <input type="number" class="settings-input" id="preset3-s1-time" value="60" min="10" max="300">
+              <span class="settings-unit">초</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset3-s1-fan1" value="25" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset3-s1-fan2" value="25" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+          </div>
+
+          <!-- S2 IGN 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S2 IGN 단계 (점화)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset3-s2-temp-main" value="550" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">초기 팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset3-s2-fan1-init" value="25" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">초기 팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset3-s2-fan2-init" value="25" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">100도마다 팬 속도 증가 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset3-s2-fan1-increment" value="4" min="0" max="20">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">100도마다 팬 속도 증가 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset3-s2-fan2-increment" value="4" min="0" max="20">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">IGN 화염 감지 후 대기 시간</label>
+              <input type="number" class="settings-input" id="preset3-s2-ign-off-delay" value="10" min="5" max="30">
+              <span class="settings-unit">초</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">자동 재점화 최대 시도 횟수</label>
+              <input type="number" class="settings-input" id="preset3-s2-retry-count" value="3" min="1" max="5">
+              <span class="settings-unit">회</span>
+            </div>
+          </div>
+
+          <!-- S3 MAIN 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S3 MAIN 단계 (소각)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset3-s3-temp-main" value="1000" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">P2/P3 작동 임계 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset3-s3-p2p3-temp" value="850" min="0" max="2000">
+              <span class="settings-unit">℃ (목표 온도보다 낮을 때 작동)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN1)</label>
+              <input type="number" class="settings-input" id="preset3-s3-fan1" value="80" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬 속도 (FAN2)</label>
+              <input type="number" class="settings-input" id="preset3-s3-fan2" value="80" min="0" max="100">
+              <span class="settings-unit">%</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">퀀처 펌프 작동 온도 (STACK)</label>
+              <input type="number" class="settings-input" id="preset3-s3-quench-temp" value="850" min="0" max="1000">
+              <span class="settings-unit">℃</span>
+            </div>
+          </div>
+
+          <!-- S4 COOL 단계 -->
+          <div class="settings-subsection">
+            <h4 class="settings-subtitle">S4 COOL 단계 (냉각)</h4>
+            <div class="settings-item">
+              <label class="settings-label">목표 온도 (연소실)</label>
+              <input type="number" class="settings-input" id="preset3-s4-temp-main" value="400" min="0" max="2000">
+              <span class="settings-unit">℃</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">소화 판단 시간</label>
+              <input type="number" class="settings-input" id="preset3-s4-extinguish-time" value="300" min="60" max="1800">
+              <span class="settings-unit">초 (목표 온도 이하 유지 시간)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬2 속도 증가량</label>
+              <input type="number" class="settings-input" id="preset3-s4-fan2-increase" value="20" min="0" max="50">
+              <span class="settings-unit">% (소화 판단 후 증가)</span>
+            </div>
+            <div class="settings-item">
+              <label class="settings-label">팬2 작동 시간</label>
+              <input type="number" class="settings-input" id="preset3-s4-fan2-duration" value="300" min="60" max="600">
+              <span class="settings-unit">초 (5분 = 300초)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 시스템 설정 -->
+      <div class="settings-section">
+        <h3 class="settings-section-title">시스템 설정</h3>
+        
+        <div class="settings-subsection">
+          <h4 class="settings-subtitle">로그 설정</h4>
+          <div class="settings-item">
+            <label class="settings-label">로그 최대 개수</label>
+            <input type="number" class="settings-input" id="log-max-count" value="1000" min="100" max="10000">
+            <span class="settings-unit">개</span>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">로그 기록 주기</label>
+            <input type="number" class="settings-input" id="log-interval" value="1" min="1" max="60" disabled>
+            <span class="settings-unit">초 (고정)</span>
+          </div>
+        </div>
+
+        <div class="settings-subsection">
+          <h4 class="settings-subtitle">그래프 설정</h4>
+          <div class="settings-item">
+            <label class="settings-label">온도 그래프 업데이트 주기</label>
+            <input type="number" class="settings-input" id="graph-update-interval" value="1" min="1" max="60" disabled>
+            <span class="settings-unit">초 (고정)</span>
+          </div>
+        </div>
+
+        <div class="settings-subsection">
+          <h4 class="settings-subtitle">웹 서버 설정</h4>
+          <div class="settings-item">
+            <label class="settings-label">웹 서버 포트</label>
+            <input type="number" class="settings-input" id="web-server-port" value="8080" min="1024" max="65535">
+            <span class="settings-unit">포트</span>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">원격 접속 허용</label>
+            <label class="settings-toggle">
+              <input type="checkbox" id="remote-access-enabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-subsection">
+          <h4 class="settings-subtitle">관리자 인증 설정</h4>
+          <div class="settings-item">
+            <label class="settings-label">인증 사용</label>
+            <label class="settings-toggle">
+              <input type="checkbox" id="auth-enabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">관리자 아이디</label>
+            <input type="text" class="settings-input" id="admin-username" value="admin" placeholder="관리자 아이디">
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">관리자 비밀번호</label>
+            <input type="password" class="settings-input" id="admin-password" value="" placeholder="비밀번호 입력">
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">세션 타임아웃</label>
+            <input type="number" class="settings-input" id="session-timeout" value="30" min="5" max="1440">
+            <span class="settings-unit">분</span>
+          </div>
+        </div>
+
+        <div class="settings-subsection">
+          <h4 class="settings-subtitle">IP 접근 제어</h4>
+          <div class="settings-item">
+            <label class="settings-label">IP 화이트리스트 사용</label>
+            <label class="settings-toggle">
+              <input type="checkbox" id="ip-whitelist-enabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">허용 IP 주소 (줄바꿈으로 구분)</label>
+            <textarea class="settings-textarea" id="allowed-ips" rows="4" placeholder="192.168.1.100&#10;192.168.1.101"></textarea>
+          </div>
+        </div>
+
+        <div class="settings-subsection">
+          <h4 class="settings-subtitle">데이터 전송 설정</h4>
+          <div class="settings-item">
+            <label class="settings-label">로그 다운로드 허용</label>
+            <label class="settings-toggle">
+              <input type="checkbox" id="log-download-enabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">카메라 스트리밍 허용</label>
+            <label class="settings-toggle">
+              <input type="checkbox" id="camera-streaming-enabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">카메라 스트리밍 포트</label>
+            <input type="number" class="settings-input" id="camera-streaming-port" value="8081" min="1024" max="65535">
+            <span class="settings-unit">포트</span>
+          </div>
+          <div class="settings-item">
+            <label class="settings-label">데이터 전송 주기</label>
+            <input type="number" class="settings-input" id="data-send-interval" value="1" min="1" max="60">
+            <span class="settings-unit">초</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-secondary" id="btn-settings-cancel">취소</button>
+      <button class="modal-btn modal-btn-primary" id="btn-settings-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="controller.js"></script>
+
+</body>
+</html>
