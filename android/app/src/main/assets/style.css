@@ -47,7 +47,7 @@ body {
     justify-content: center;
     display: flex;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
     position: fixed;
     top: 0;
     left: 0;
@@ -62,12 +62,12 @@ body {
     gap: 14px;
     overflow: visible;
     flex-shrink: 0;
-    /* 비율 유지하면서 스케일링 - 세로 높이를 기준으로 스케일링하여 전체가 보이도록 */
+    /* 비율 유지하면서 스케일링 - 너비와 높이 중 작은 값을 사용하여 전체가 보이도록 */
     transform-origin: center center;
-    transform: scale(calc(100vh / 810));
+    transform: scale(min(calc((100vw - 20px) / 1440), calc((100vh - 20px) / 810)));
     /* 스케일링 후에도 전체가 보이도록 보장 */
-    max-width: 100vw;
-    max-height: 100vh;
+    max-width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
   }
   
   /* transform scale이 모든 것을 비율 유지하면서 스케일링하므로 개별 요소 크기 조정 불필요 */
