@@ -6,46 +6,56 @@
 /* ---- Reset / Base ---- */
 * { box-sizing: border-box; }
 html, body { 
-  margin: 0; 
-  padding: 0; 
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
+  margin: 0 !important; 
+  padding: 0 !important; 
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   /* 모바일 뷰포트 설정 */
   -webkit-user-scalable: yes;
   user-scalable: yes;
   touch-action: manipulation;
+  /* 스크롤 완전 차단 */
+  -webkit-overflow-scrolling: none;
+  overscroll-behavior: none;
 }
 body {
   font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   background: radial-gradient(circle at top, #102545 0%, #020817 55%, #020617 100%);
   color: #e8f0ff;
+  /* 높이 고정 */
   min-height: 100vh;
+  max-height: 100vh;
 }
 
 /* ---- App Frame ---- */
 .app-shell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100vw;
-  height: 100vh;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  /* 스크롤 완전 차단 */
+  -webkit-overflow-scrolling: none;
+  overscroll-behavior: none;
 }
 .dashboard {
-  /* 고정 크기: 1440x810 (원본 크기) */
-  width: 1440px;
-  height: 810px;
-  /* JavaScript로 transform: scale()을 사용하여 화면에 맞게 조정 */
+  /* 고정 크기: 1440x810 (원본 크기) - JavaScript가 스케일 조정 */
+  width: 1440px !important;
+  height: 810px !important;
   background: linear-gradient(145deg,#020b19,#071729,#04111f);
   border-radius: 14px;
   box-shadow: 0 18px 40px rgba(0,0,0,.8);
@@ -55,9 +65,10 @@ body {
   gap: 14px;
   overflow: visible;
   flex-shrink: 0;
-  transform-origin: center center;
-  margin: auto;
-  /* JavaScript가 transform을 설정하므로 여기서는 none */
+  transform-origin: center center !important;
+  margin: 0 !important;
+  /* JavaScript가 transform을 설정 */
+  position: relative;
 }
 
 /* ---- Card ---- */

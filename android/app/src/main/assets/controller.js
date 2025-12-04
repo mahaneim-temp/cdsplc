@@ -1,41 +1,116 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ========== 모바일 화면 크기 자동 조정 ==========
+  // ========== 모바일 화면 크기 자동 조정 (완벽한 버전) ==========
   // 전역 함수로 만들어서 MainActivity에서도 호출 가능하도록
   window.adjustScreenSize = function() {
     const dashboard = document.querySelector('.dashboard');
     const appShell = document.querySelector('.app-shell');
+    const html = document.documentElement;
+    const body = document.body;
     
     if (!dashboard || !appShell) return;
     
-    // 실제 화면 크기 (WebView의 실제 크기)
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+    // 1. HTML/Body 스타일 강제 설정 (스크롤 완전 차단)
+    html.style.width = '100%';
+    html.style.height = '100%';
+    html.style.overflow = 'hidden';
+    html.style.margin = '0';
+    html.style.padding = '0';
+    html.style.position = 'fixed';
+    html.style.top = '0';
+    html.style.left = '0';
+    html.style.right = '0';
+    html.style.bottom = '0';
     
-    // 원본 대시보드 크기 (1440x810)
-    const originalWidth = 1440;
-    const originalHeight = 810;
+    body.style.width = '100%';
+    body.style.height = '100%';
+    body.style.overflow = 'hidden';
+    body.style.margin = '0';
+    body.style.padding = '0';
+    body.style.position = 'fixed';
+    body.style.top = '0';
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.bottom = '0';
     
-    // 화면에 맞는 스케일 계산
-    const scaleX = screenWidth / originalWidth;
-    const scaleY = screenHeight / originalHeight;
-    const scale = Math.min(scaleX, scaleY, 1.0); // 1.0을 넘지 않도록
-    
-    // 스케일 적용
-    dashboard.style.transform = `scale(${scale})`;
-    dashboard.style.transformOrigin = 'center center';
-    
-    // app-shell이 전체 화면을 차지하도록
+    // 2. App-shell 스타일 강제 설정
     appShell.style.width = '100%';
     appShell.style.height = '100%';
     appShell.style.padding = '0';
     appShell.style.margin = '0';
+    appShell.style.position = 'fixed';
+    appShell.style.top = '0';
+    appShell.style.left = '0';
+    appShell.style.right = '0';
+    appShell.style.bottom = '0';
+    appShell.style.overflow = 'hidden';
+    
+    // 3. 실제 화면 크기 측정 (여러 방법 시도)
+    let screenWidth = window.innerWidth || document.documentElement.clientWidth || window.screen.width;
+    let screenHeight = window.innerHeight || document.documentElement.clientHeight || window.screen.height;
+    
+    // WebView의 실제 크기를 정확히 측정하기 위해 여러 번 시도
+    if (screenWidth === 0 || screenHeight === 0) {
+      // 크기가 0이면 잠시 후 재시도
+      setTimeout(window.adjustScreenSize, 50);
+      return;
+    }
+    
+    // 4. 원본 대시보드 크기 (1440x810)
+    const originalWidth = 1440;
+    const originalHeight = 810;
+    
+    // 5. 화면에 맞는 스케일 계산 (더 정확한 방법)
+    // 가로/세로 비율을 모두 고려하여 더 작은 스케일 사용
+    const scaleX = screenWidth / originalWidth;
+    const scaleY = screenHeight / originalHeight;
+    const scale = Math.min(scaleX, scaleY); // 1.0 제한 제거 - 필요시 확대도 허용
+    
+    // 6. 스케일 적용 (정확한 소수점 처리)
+    const finalScale = Math.max(0.1, Math.min(scale, 2.0)); // 최소 0.1, 최대 2.0
+    dashboard.style.transform = `scale(${finalScale})`;
+    dashboard.style.transformOrigin = 'center center';
+    dashboard.style.margin = '0';
+    dashboard.style.padding = '16px'; // 내부 패딩은 유지
+    
+    // 7. 디버깅용 (필요시 주석 해제)
+    // console.log('Screen:', screenWidth, 'x', screenHeight, 'Scale:', finalScale);
   };
   
-  // 초기 조정 및 리사이즈 이벤트
-  window.adjustScreenSize();
-  window.addEventListener('resize', window.adjustScreenSize);
+  // 초기 조정 (여러 번 시도하여 정확도 향상)
+  function initializeScreenSize() {
+    window.adjustScreenSize();
+    // DOM이 완전히 로드될 때까지 여러 번 재시도
+    setTimeout(window.adjustScreenSize, 10);
+    setTimeout(window.adjustScreenSize, 50);
+    setTimeout(window.adjustScreenSize, 100);
+    setTimeout(window.adjustScreenSize, 200);
+    setTimeout(window.adjustScreenSize, 500);
+  }
+  
+  initializeScreenSize();
+  
+  // 리사이즈 이벤트 (디바운싱 적용)
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      window.adjustScreenSize();
+      setTimeout(window.adjustScreenSize, 50); // 한 번 더 재시도
+    }, 100);
+  });
+  
+  // 화면 회전 이벤트
   window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      window.adjustScreenSize();
+      setTimeout(window.adjustScreenSize, 100);
+      setTimeout(window.adjustScreenSize, 300);
+    }, 100);
+  });
+  
+  // 페이지 로드 완료 후 한 번 더
+  window.addEventListener('load', () => {
     setTimeout(window.adjustScreenSize, 100);
   });
 
