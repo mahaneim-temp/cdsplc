@@ -65,18 +65,43 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 // 페이지 로드 완료 후 JavaScript로 화면 크기에 맞게 조정
-                // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 실행
+                // 여러 번 시도하여 정확도 향상
                 view.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        // 첫 번째 시도
                         view.evaluateJavascript(
                             "if (typeof window.adjustScreenSize === 'function') { " +
                             "window.adjustScreenSize(); " +
                             "}",
                             null
                         );
+                        // 두 번째 시도 (약간의 지연)
+                        view.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.evaluateJavascript(
+                                    "if (typeof window.adjustScreenSize === 'function') { " +
+                                    "window.adjustScreenSize(); " +
+                                    "}",
+                                    null
+                                );
+                            }
+                        }, 100);
+                        // 세 번째 시도 (더 긴 지연)
+                        view.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.evaluateJavascript(
+                                    "if (typeof window.adjustScreenSize === 'function') { " +
+                                    "window.adjustScreenSize(); " +
+                                    "}",
+                                    null
+                                );
+                            }
+                        }, 300);
                     }
-                }, 100);
+                }, 50);
             }
         });
         
