@@ -36,14 +36,19 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setLoadWithOverviewMode(false);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(false);
-        webSettings.setSupportZoom(true);
         
-        // 모바일 최적화 - 스케일링 비활성화하여 CSS transform이 제대로 작동하도록
+        // 모바일 화면에 맞게 스케일링 설정
+        webSettings.setUseWideViewPort(true);  // viewport meta 태그 사용
+        webSettings.setLoadWithOverviewMode(true);  // 전체 페이지를 화면에 맞춤
+        webSettings.setBuiltInZoomControls(false);  // 줌 컨트롤 숨김
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setSupportZoom(false);  // 줌 비활성화
+        
+        // 레이아웃 알고리즘 설정
         webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+        
+        // 초기 스케일 설정 - 100%로 설정하여 viewport가 제대로 작동하도록
+        // JavaScript에서 추가로 스케일 조정을 수행함
         webView.setInitialScale(100);
         
         // 캐시 설정
@@ -54,6 +59,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return false;
+            }
+            
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // 페이지 로드 완료 후 JavaScript로 화면 크기에 맞게 조정
+                // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 실행
+                view.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.evaluateJavascript(
+                            "if (typeof window.adjustScreenSize === 'function') { " +
+                            "window.adjustScreenSize(); " +
+                            "}",
+                            null
+                        );
+                    }
+                }, 100);
             }
         });
         
