@@ -1321,10 +1321,12 @@ document.addEventListener("DOMContentLoaded", () => {
         ignitionStartTemp = getMainTempFromDom();
         clearTimeout(ignOffTimer);
         
-        // 카메라 뷰 불길 애니메이션 초기화
+        // 카메라 뷰 불길 표시 시작 (점화 단계)
         const cameraView = document.getElementById("camera-view");
-        if (cameraView) {
-          cameraView.classList.remove("flame-active");
+        const flameContainer = document.getElementById("camera-flame-container");
+        if (cameraView && flameContainer) {
+          cameraView.classList.add("flame-active");
+          flameContainer.classList.add("flame-active");
         }
         
         setTemps(ignitionStartTemp, getStackTempFromDom());
@@ -1356,8 +1358,10 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // 소각 단계에서는 화염이 계속 유지되므로 카메라 뷰 불길 유지
         const cameraViewMain = document.getElementById("camera-view");
-        if (cameraViewMain) {
+        const flameContainerMain = document.getElementById("camera-flame-container");
+        if (cameraViewMain && flameContainerMain) {
           cameraViewMain.classList.add("flame-active");
+          flameContainerMain.classList.add("flame-active");
         }
         
         // 시뮬레이션 모드가 아니면 현재 온도 사용
@@ -1390,10 +1394,14 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(fan2IncreaseTimer);
         clearTimeout(fan2StopTimer);
         
-        // 냉각 단계에서는 화염이 꺼지므로 카메라 뷰 불길 제거
+        // 냉각 단계에서는 온도가 낮아질 때까지 불길 유지
+        // processCoolStep에서 온도가 낮아져 끝날 때까지 불길 표시
         const cameraViewCool = document.getElementById("camera-view");
-        if (cameraViewCool) {
-          cameraViewCool.classList.remove("flame-active");
+        const flameContainerCool = document.getElementById("camera-flame-container");
+        if (cameraViewCool && flameContainerCool) {
+          // 냉각 단계 시작 시에도 불길 유지 (온도가 낮아질 때까지)
+          cameraViewCool.classList.add("flame-active");
+          flameContainerCool.classList.add("flame-active");
         }
         
         // 시뮬레이션 모드가 아니면 현재 온도 사용
@@ -1549,10 +1557,12 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(ignOffTimer);
     ignOffTimer = null;
     
-    // 카메라 뷰 불길 애니메이션 제거
+    // 카메라 뷰 불길 제거
     const cameraViewReset = document.getElementById("camera-view");
-    if (cameraViewReset) {
+    const flameContainerReset = document.getElementById("camera-flame-container");
+    if (cameraViewReset && flameContainerReset) {
       cameraViewReset.classList.remove("flame-active");
+      flameContainerReset.classList.remove("flame-active");
     }
     
     // 소각 단계 상태 리셋
@@ -1898,6 +1908,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const isOn = btn.classList.contains("on");
       setDevice(dev, !isOn);
       log(`${dev} → ${!isOn ? "ON" : "OFF"} (수동)`, "info");
+
+      // IGN 버튼을 수동으로 켰을 때 불꽃 표시
+      if (dev === "IGN" && !isOn) {
+        const cameraView = document.getElementById("camera-view");
+        const flameContainer = document.getElementById("camera-flame-container");
+        if (cameraView && flameContainer) {
+          cameraView.classList.add("flame-active");
+          flameContainer.classList.add("flame-active");
+        }
+      } else if (dev === "IGN" && isOn) {
+        // IGN 버튼을 수동으로 껐을 때 불꽃 제거 (단, AUTO 모드의 S2/S3/S4 단계가 아닐 때만)
+        if (mode !== "AUTO" || (currentStepIndex !== 2 && currentStepIndex !== 3 && currentStepIndex !== 4)) {
+          const cameraView = document.getElementById("camera-view");
+          const flameContainer = document.getElementById("camera-flame-container");
+          if (cameraView && flameContainer) {
+            cameraView.classList.remove("flame-active");
+            flameContainer.classList.remove("flame-active");
+          }
+        }
+      }
 
       // AUTO 상태에서도 수동 조작은 허용하되,
       // 다음 STEP 조건이 되면 goToStep()이 계속 진행.
@@ -2257,10 +2287,12 @@ document.addEventListener("DOMContentLoaded", () => {
       flameDetected = true;
       log("🔥 화염 감지됨", "success");
       
-      // 카메라 뷰에 불길 애니메이션 표시
+      // 카메라 뷰에 불길 표시
       const cameraView = document.getElementById("camera-view");
-      if (cameraView) {
+      const flameContainer = document.getElementById("camera-flame-container");
+      if (cameraView && flameContainer) {
         cameraView.classList.add("flame-active");
+        flameContainer.classList.add("flame-active");
       }
       
       // 화염 감지 후 설정된 시간 후 IGN OFF
@@ -2272,11 +2304,17 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // 화염 상태 업데이트 (카메라 뷰)
     const cameraView = document.getElementById("camera-view");
-    if (cameraView) {
+    const flameContainer = document.getElementById("camera-flame-container");
+    if (cameraView && flameContainer) {
       if (currentFlameDetected) {
         cameraView.classList.add("flame-active");
+        flameContainer.classList.add("flame-active");
       } else {
-        cameraView.classList.remove("flame-active");
+        // 화염이 꺼졌을 때는 AUTO 모드의 S2/S3/S4 단계가 아닐 때만 제거
+        if (mode !== "AUTO" || (currentStepIndex !== 2 && currentStepIndex !== 3 && currentStepIndex !== 4)) {
+          cameraView.classList.remove("flame-active");
+          flameContainer.classList.remove("flame-active");
+        }
       }
     }
     
@@ -2426,6 +2464,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!extinguishDetected && timeBelowTarget >= s4.extinguishTime) {
         extinguishDetected = true;
         log(`소화 판단 완료 (${s4.extinguishTime}초 유지) - 팬2 속도 증가`, "success");
+        
+        // 소화 판단 완료 시 불길 제거
+        const cameraView = document.getElementById("camera-view");
+        const flameContainer = document.getElementById("camera-flame-container");
+        if (cameraView && flameContainer) {
+          cameraView.classList.remove("flame-active");
+          flameContainer.classList.remove("flame-active");
+        }
         
         // 팬2 속도 증가
         const currentFan2 = fanValues.fan2;
