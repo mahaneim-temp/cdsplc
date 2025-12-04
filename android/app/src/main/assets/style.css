@@ -10,145 +10,54 @@ html, body {
   padding: 0; 
   width: 100%;
   height: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
   /* 모바일 뷰포트 설정 */
   -webkit-user-scalable: yes;
   user-scalable: yes;
   touch-action: manipulation;
-  position: relative;
 }
 body {
   font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   background: radial-gradient(circle at top, #102545 0%, #020817 55%, #020617 100%);
   color: #e8f0ff;
-}
-
-/* 모바일 가로 모드 스타일 - transform scale 완전 제거, 실제 크기로 조정 */
-@media screen and (orientation: landscape) {
-  html, body {
-    width: 100vw !important;
-    height: 100vh !important;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    position: fixed;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .app-shell {
-    width: 100vw !important;
-    height: 100vh !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    align-items: center !important;
-    justify-content: center !important;
-    display: flex !important;
-    overflow: hidden !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-  }
-  
-  .dashboard {
-    /* 실제 크기 조정 - transform scale 완전 제거 */
-    /* 비율 유지: 1440:810 = 16:9 */
-    max-width: 1440px !important;
-    max-height: 810px !important;
-    width: min(1440px, calc(100vh * 1440 / 810), 100vw) !important;
-    height: min(810px, calc(100vw * 810 / 1440), 100vh) !important;
-    aspect-ratio: 1440 / 810 !important;
-    padding: 16px !important;
-    gap: 14px !important;
-    overflow: visible !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: linear-gradient(145deg,#020b19,#071729,#04111f) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 18px 40px rgba(0,0,0,.8) !important;
-    /* transform scale 완전 제거 - 실제 크기로 조정 */
-    transform: none !important;
-    position: relative !important;
-    margin: auto !important;
-  }
-  
-  /* 내부 레이아웃 요소들 정상 작동 보장 */
-  .main-row {
-    flex: 1 !important;
-    display: grid !important;
-    grid-template-columns: 400px 416px 1fr !important;
-    gap: 12px !important;
-    overflow: visible !important;
-    min-height: 0 !important;
-  }
-  
-  .column {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-    overflow: visible !important;
-    min-height: 0 !important;
-  }
-  
-  .column-right {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-  
-  .right-bottom-row {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 10px !important;
-    flex: 0.85 !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-  
-  /* 설정 모달 */
-  .modal-container {
-    width: 90vw !important;
-    max-width: 90vw !important;
-    max-height: 90vh !important;
-    margin: 5vh auto !important;
-    transform: none !important;
-    position: fixed !important;
-    z-index: 10000 !important;
-  }
-  
-  .modal-body {
-    max-height: calc(90vh - 100px) !important;
-    overflow-y: auto !important;
-    padding: 10px !important;
-  }
+  min-height: 100vh;
 }
 
 /* ---- App Frame ---- */
 .app-shell {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:16px;
-  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
-.dashboard{
-  width:1440px; 
-  height:810px;
+.dashboard {
+  /* 고정 크기: 1440x810 (원본 크기) */
+  width: 1440px;
+  height: 810px;
+  /* JavaScript로 transform: scale()을 사용하여 화면에 맞게 조정 */
   background: linear-gradient(145deg,#020b19,#071729,#04111f);
-  border-radius:14px;
-  box-shadow:0 18px 40px rgba(0,0,0,.8);
-  padding:16px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.8);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   overflow: visible;
   flex-shrink: 0;
-  /* 기본 transform 없음 - 미디어 쿼리에서만 적용 */
-  transform: none;
   transform-origin: center center;
+  margin: auto;
+  /* JavaScript가 transform을 설정하므로 여기서는 none */
 }
 
 /* ---- Card ---- */

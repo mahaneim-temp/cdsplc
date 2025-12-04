@@ -1,5 +1,44 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+  // ========== 모바일 화면 크기 자동 조정 ==========
+  // 전역 함수로 만들어서 MainActivity에서도 호출 가능하도록
+  window.adjustScreenSize = function() {
+    const dashboard = document.querySelector('.dashboard');
+    const appShell = document.querySelector('.app-shell');
+    
+    if (!dashboard || !appShell) return;
+    
+    // 실제 화면 크기 (WebView의 실제 크기)
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // 원본 대시보드 크기 (1440x810)
+    const originalWidth = 1440;
+    const originalHeight = 810;
+    
+    // 화면에 맞는 스케일 계산
+    const scaleX = screenWidth / originalWidth;
+    const scaleY = screenHeight / originalHeight;
+    const scale = Math.min(scaleX, scaleY, 1.0); // 1.0을 넘지 않도록
+    
+    // 스케일 적용
+    dashboard.style.transform = `scale(${scale})`;
+    dashboard.style.transformOrigin = 'center center';
+    
+    // app-shell이 전체 화면을 차지하도록
+    appShell.style.width = '100%';
+    appShell.style.height = '100%';
+    appShell.style.padding = '0';
+    appShell.style.margin = '0';
+  };
+  
+  // 초기 조정 및 리사이즈 이벤트
+  window.adjustScreenSize();
+  window.addEventListener('resize', window.adjustScreenSize);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(window.adjustScreenSize, 100);
+  });
+
   const logBody   = document.getElementById("log-body");
   const stepText  = document.getElementById("step-text");
   const modeText  = document.getElementById("mode-text");
